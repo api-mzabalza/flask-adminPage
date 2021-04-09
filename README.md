@@ -43,7 +43,7 @@ The program is written in python language. Find all requirements in requirements
 
 ### Instructions
 
-**2. Setup environment**
+**1. Setup environment**
 * (optinal) create a virtual environment before installing all required dependencies:
 ```shell
 virtualenv env
@@ -54,8 +54,18 @@ source env/bin/activate
 ```shell
 pip install -r requirements.txt
 ```
-
-**2. Executing the program**
+**1. Setup db**
+```shell
+python3
+```
+```python
+from app import create_app
+app = create_app()
+app.app_context().push()
+from app import db, create_app
+db.create_all(app=create_app())
+```
+**3. Executing the program**
 
 To execute the program, run:
 

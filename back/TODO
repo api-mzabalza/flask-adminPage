@@ -1,0 +1,15 @@
+-ADD REACT FRONT
+    - TRY TO DO IT FAST (if not leave it as it is)
+
+- Connect routes to the db
+- Login doenst work
+- restructure project
+    - create Blueprints
+    - app factory structure.
+    - central app folder with:
+        - __init__.py
+        - models
+        - routes
+        - forms.py
+
+- Create endpoints only for ADMIN USERS

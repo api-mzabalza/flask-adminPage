@@ -10,3 +10,7 @@ __pycache__/
 *.csv
 *.xlsx
 *.pickle
+
+
+# FRONT
+node_modules/

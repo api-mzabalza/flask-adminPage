@@ -1,0 +1,45 @@
+.users-icon {
+    font-size: 8rem;
+    color: rgba(255,255,255,0.7);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 1.2rem 0;
+
+    .form-group input,textarea  {
+        color: white;
+        &::placeholder{
+            // color: rgba(0,0,0,0.6);
+            color: rgba(255,255,255,0.3);
+
+        }
+        padding: 1rem 2rem;
+        font-size: 1.4rem;
+        margin: 0.3rem;
+        border: 1px solid #ccc;
+        background-color: rgba(255,255,255, 0.1);
+        border-radius: 1rem;
+
+        &:focus {
+            outline:0;
+        }
+
+    }
+
+    &-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        margin-bottom: 4rem;
+        font-size: 1.2rem;
+        // font-family: Roboto;
+        color: rgba(255,255,255,0.5);
+
+        font-family: Righteous, Poppins;
+        
+        font-weight: 300;
+    }
+}

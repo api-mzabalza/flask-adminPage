@@ -1,6 +1,11 @@
 from flask import Blueprint, render_template
+from flask_restful import Api, Resource
 
-main = Blueprint('main', __name__)
+
+# Example to test functionalities of Flask-restful | Flask-restplus
+
+blueprint = Blueprint('main', __name__)
+api = Api(blueprint)
 
 posts = [
     {
@@ -17,10 +22,11 @@ posts = [
     },
 ]
 
-@main.route("/")
-@main.route("/home")
-def home():
-    return {
-        'status': True,
-        'message': 'Wellcome to the api'
-    }
+class Main(Resource):
+    def get(self):
+        return {
+            'status': True,
+            'message': 'Wellcome to the api'
+        }
+
+api.add_resource(Main, '/')

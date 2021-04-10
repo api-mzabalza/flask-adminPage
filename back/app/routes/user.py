@@ -1,90 +1,110 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from app import db, bcrypt
-from app.models.user import User
-from app.models.post import Post
-import json
+from app.common.decorators import token_required
+import datetime
+import jwt
+
+# SCHEMAS
+from app.schemas.user import UserSchema
+from app.schemas.validators.login import LoginSchema
 
 # MODELS
 from app.models.user import User
+from app.models.post import Post
 
 # TODO: Create Serializers to return json data
 
 user = Blueprint('user', __name__)
 
-@user.route("/login", methods=['GET', 'POST'])
+@user.route("/login", methods=['POST'])
 def login():
-    if request.method == 'POST':
-        return {
-            'status': True,
-            'message': 'Building login endpoint...'
-        }
 
+    errors = LoginSchema().validate(request.get_json())
+    if errors:
+        return {'message': 'Error','Error': errors}
 
-@user.route("/register", methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        ## TODO: INPUT VALIDATOR DECORATOR
-        data = request.json
-        hashed_password = bcrypt.generate_password_hash(data.get('password')).decode('utf-8')
-        newUser = User(
-            username=data.get('username'),
-            email=data.get('email'),
-            password=hashed_password
-        )
-        db.session.add(newUser)
-        db.session.commit()
-        # print(rtn)
-        return {
-            'status': True,
-            'message': f"New {data.get('username')} created."
-        }
-    return {
-        'status': False,
-        'message': f'Request method: {request.method} not valid'
-    }
+    params = request.get_json()
+    email = params.get('email')
+    password = params.get('password')
+    rtn = User.query.filter_by(email=email).all()
+
+    if not rtn:
+        return {'token': False,'message': 'Wrong Username'}
+
+    user = vars(rtn[0])
+    print(user)
+    if user and bcrypt.check_password_hash(user['password'], password):
         
+        token = jwt.encode({'id': user['id'], 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, current_app.config['SECRET_KEY'], algorithm="HS256")
+        return jsonify({
+            'token': token,
+            **UserSchema().dump(user)
+        })
 
-# Get all users
-@user.route("/user", methods=['GET'])
-def getAll():
-    users = [vars(x) for x in User.get_all()]
-    
-    formated_users = [{
-        'username': x.get('username'),
-        'email': x.get('email'),
-    } for x in users]
+    return {
+        'token': False,
+        'message': 'Wrong Password'
+    }
 
-    return jsonify(formated_users)
+# Create new User
+@user.route("/register", methods=['POST'])
+def register():
+    ## TODO: INPUT VALIDATOR DECORATOR
+    data = request.json
+    data['password'] = bcrypt.generate_password_hash(data.get('password')).decode('utf-8')
 
-
-
-# Create user
-@user.route("/user", methods=['POST'])
-def post_user():
-    '''
-    creat user
-    '''
-
-    name = request.get_json()['name']
-    email = request.get_json()['email']
-    phone = request.get_json()['phone']
-    password = request.get_json()['password']
-    
-    newUser = User(
-        username = 1,
-        toner_color = 'blue',
-        toner_hex = '#0F85FF'
-    )
-
-
+    newUser = User(**data)
     try:
         db.session.add(newUser)
         db.session.commit()
-    except SQLAlchemyError as e:
+    except Exception as e:
         error = str(e.__dict__['orig'])
         return {'message': f'Error', 'Error': error}
 
     return {
         'status': True,
-        'message': 'user created'
+        'message': f"New {data.get('username')} created.",
+        'user': UserSchema().dump(newUser)
+    }
+
+# Delete user
+@token_required
+@user.route("/user", methods=['DELETE'])
+def delete_user():
+    _id = request.get_json()['id']
+    try:
+        user = User.query.filter(User.id==_id).delete()
+        db.session.commit()
+    except Exception as e:
+        return {'message': f'Error', 'Error': str(e)}
+    
+    if user:
+        return {'status': True, 'message': f'Deleted user with id: {_id}'}
+    return {'status': False, 'message': f'User not found for id: {_id}'}
+
+
+# Get all users
+@user.route("/user", methods=['GET'])
+@token_required
+def get_all_users(loged_user):
+    users = User.query.all()
+    return jsonify(UserSchema(many=True).dump(users))
+
+
+@user.route("/user/<int:user_id>", methods=['GET'])
+@token_required
+def getUserById(loged_user, user_id):
+    # print(user_id)
+    rtn = User.query.filter_by(id=user_id).all()
+    if not rtn:
+        return {
+            'status': False,
+            'message': 'Wrong user id'
+        }
+
+    user = UserSchema().dump(rtn[0])
+    
+    return {
+        'status': True,
+        'user': user
     }

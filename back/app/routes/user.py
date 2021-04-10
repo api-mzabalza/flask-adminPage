@@ -1,10 +1,13 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from app import db, bcrypt
 from app.models.user import User
 from app.models.post import Post
+import json
 
 # MODELS
 from app.models.user import User
+
+# TODO: Create Serializers to return json data
 
 user = Blueprint('user', __name__)
 
@@ -20,24 +23,40 @@ def login():
 @user.route("/register", methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
+        ## TODO: INPUT VALIDATOR DECORATOR
+        data = request.json
+        hashed_password = bcrypt.generate_password_hash(data.get('password')).decode('utf-8')
+        newUser = User(
+            username=data.get('username'),
+            email=data.get('email'),
+            password=hashed_password
+        )
+        db.session.add(newUser)
+        db.session.commit()
+        # print(rtn)
         return {
             'status': True,
-            'message': 'Building login endpoint...'
+            'message': f"New {data.get('username')} created."
         }
+    return {
+        'status': False,
+        'message': f'Request method: {request.method} not valid'
+    }
         
 
 # Get all users
 @user.route("/user", methods=['GET'])
 def getAll():
-    '''
-    Gell all users
-    '''
-    users = User.query.all()
-    print(users)
-    return {
-        'status': True,
-        'data': users
-    }
+    users = [vars(x) for x in User.get_all()]
+    
+    formated_users = [{
+        'username': x.get('username'),
+        'email': x.get('email'),
+    } for x in users]
+
+    return jsonify(formated_users)
+
+
 
 # Create user
 @user.route("/user", methods=['POST'])

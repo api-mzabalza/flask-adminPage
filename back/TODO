@@ -1,15 +1,10 @@
--ADD REACT FRONT
-    - TRY TO DO IT FAST (if not leave it as it is)
 
-- Connect routes to the db
-- Login doenst work
-- restructure project
-    - create Blueprints
-    - app factory structure.
-    - central app folder with:
-        - __init__.py
-        - models
-        - routes
-        - forms.py
+- Connect routes to the db (postgres)
 
-- Create endpoints only for ADMIN USERS
+- add decorator validator (check course)
+- add logging
+- add unitesting
+- create post, with model relationships
+- youtube application factory flask
+
+

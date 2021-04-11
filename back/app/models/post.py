@@ -1,5 +1,7 @@
-from app import db
+from app import db, admin
 from datetime import datetime
+from flask_admin.contrib.sqla import ModelView
+
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -10,3 +12,11 @@ class Post(db.Model):
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}')"
+
+
+class PostView(ModelView):
+    column_list = ['id','title', 'date_posted', 'content', 'user_id']
+    # olumn_searchable_list = ["title"]
+
+# admin.add_view(PostView(Post, db.session, list_columns=['id', 'title', 'date_posted', 'content', 'user_id']))
+admin.add_view(PostView(Post, db.session))

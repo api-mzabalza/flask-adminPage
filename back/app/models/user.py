@@ -1,5 +1,7 @@
-from app import db
+from app import db, admin
 from app.models.post import Post
+from flask_admin.contrib.sqla import ModelView
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -11,3 +13,16 @@ class User(db.Model):
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"
+
+class UserView(ModelView):
+    column_list = ['id','username', 'email', 'image_file', 'password', 'posts']
+
+    # can_delete = False  # disable model deletion
+
+# admin.add_view(PostView(Post, db.session, list_columns=['id', 'title', 'date_posted', 'content', 'user_id']))
+admin.add_view(UserView(User, db.session))
+
+
+
+# admin.add_view(ModelView(User, db.session))
+

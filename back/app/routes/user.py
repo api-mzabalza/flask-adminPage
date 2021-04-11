@@ -14,9 +14,9 @@ from app.models.post import Post
 
 # TODO: Create Serializers to return json data
 
-user = Blueprint('user', __name__)
+blueprint = Blueprint('_user', __name__)
 
-@user.route("/login", methods=['POST'])
+@blueprint.route("/login", methods=['POST'])
 def login():
 
     errors = LoginSchema().validate(request.get_json())
@@ -35,7 +35,7 @@ def login():
     print(user)
     if user and bcrypt.check_password_hash(user['password'], password):
         
-        token = jwt.encode({'id': user['id'], 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, current_app.config['SECRET_KEY'], algorithm="HS256")
+        token = jwt.encode({'id': user['id'], 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=760)}, current_app.config['SECRET_KEY'], algorithm="HS256")
         return jsonify({
             'token': token,
             **UserSchema().dump(user)
@@ -47,7 +47,7 @@ def login():
     }
 
 # Create new User
-@user.route("/register", methods=['POST'])
+@blueprint.route("/register", methods=['POST'])
 def register():
     ## TODO: INPUT VALIDATOR DECORATOR
     data = request.json
@@ -69,7 +69,7 @@ def register():
 
 # Delete user
 @token_required
-@user.route("/user", methods=['DELETE'])
+@blueprint.route("/user", methods=['DELETE'])
 def delete_user():
     _id = request.get_json()['id']
     try:
@@ -84,14 +84,14 @@ def delete_user():
 
 
 # Get all users
-@user.route("/user", methods=['GET'])
+@blueprint.route("/user", methods=['GET'])
 @token_required
 def get_all_users(loged_user):
     users = User.query.all()
     return jsonify(UserSchema(many=True).dump(users))
 
 
-@user.route("/user/<int:user_id>", methods=['GET'])
+@blueprint.route("/user/<int:user_id>", methods=['GET'])
 @token_required
 def getUserById(loged_user, user_id):
     # print(user_id)
